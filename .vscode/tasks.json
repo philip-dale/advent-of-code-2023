@@ -33,7 +33,7 @@
                 "${fileDirname}/*.cpp",
                 "${workspaceFolder}/tools/*.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/build/${fileDirnameBasename}"
             ],
             "options": {
                 "cwd": "${fileDirname}"
