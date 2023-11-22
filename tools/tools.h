@@ -15,7 +15,7 @@ std::string to_hex_string(std::vector<std::uint8_t> const & data);
 std::string file_to_string(std::string const& filename);
 
 template<class T> 
-T string_to(std::string &const str)
+T string_to(std::string const& str)
 {
     std::stringstream convert(str);
     T value;
