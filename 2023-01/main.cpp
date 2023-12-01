@@ -4,9 +4,11 @@
 #include <cstdint>
 #include <iostream>
 
+constexpr char NOT_DIGIT = ' ';
+
 std::uint32_t num_from_line(std::string & line)
 {
-    char first = ' ';
+    char first = NOT_DIGIT;
     for(auto &&c : line)
     {
         if(isdigit(c))
@@ -16,7 +18,7 @@ std::uint32_t num_from_line(std::string & line)
         }
     }
 
-    char last = ' ';
+    char last = NOT_DIGIT;
     for(auto c = line.end(); c >= line.begin(); c--)
     {
         if(isdigit(*c))
@@ -30,55 +32,53 @@ std::uint32_t num_from_line(std::string & line)
 
 char val_at_pos(std::string const & line, std::string::iterator const & iter, std::string const & val, char return_val)
 {
-    auto pos = iter - line.begin();
-    auto test = line.substr(pos, val.size());
-    if(test == val)
+    if(line.substr(iter - line.begin(), val.size()) == val)
     {
         return return_val;
     }
-    return ' ';
+    return NOT_DIGIT;
 }
 
-char is_num_str(std::string const & line, std::string::iterator & pos)
+char get_num_str(std::string const & line, std::string::iterator & pos)
 {
-    char ret_val = ' ';
+    char ret_val = NOT_DIGIT;
     ret_val = val_at_pos(line, pos, "one", '1');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "two", '2');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "three", '3');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "four", '4');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "five", '5');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "six", '6');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "seven", '7');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
     ret_val = val_at_pos(line, pos, "eight", '8');
-    if(ret_val != ' ')
+    if(ret_val != NOT_DIGIT)
     {
         return ret_val;
     }
@@ -86,43 +86,44 @@ char is_num_str(std::string const & line, std::string::iterator & pos)
     return ret_val;
 }
 
+char check_pos(std::string const & line, std::string::iterator & pos)
+{
+    if(isdigit(*pos))
+    {
+        return *pos;
+    }
+    else
+    {
+        auto val = get_num_str(line, pos);
+        if(val != NOT_DIGIT)
+        {
+            return val;
+        }
+    }
+    return NOT_DIGIT;
+}
+
 std::uint32_t num_from_line_str(std::string & line)
 {
-    char first = ' ';
+    char first = NOT_DIGIT;
     for(auto c = line.begin(); c < line.end(); c++)
     {
-        if(isdigit(*c))
+        auto val = check_pos(line, c);
+        if (val != NOT_DIGIT)
         {
-            first = *c;
+            first = val;
             break;
-        }
-        else
-        {
-            auto val = is_num_str(line, c);
-            if(val != ' ')
-            {
-                first = val;
-                break;
-            }
         }
     }
 
-    char last = ' ';
+    char last = NOT_DIGIT;
     for(auto c = line.end(); c >= line.begin(); c--)
     {
-        if(isdigit(*c))
+        auto val = check_pos(line, c);
+        if (val != NOT_DIGIT)
         {
-            last = *c;
+            last = val;
             break;
-        }
-        else
-        {
-            auto val = is_num_str(line, c);
-            if(val != ' ')
-            {
-                last = val;
-                break;
-            }
         }
     }
     return stoi(std::string{first, last});
