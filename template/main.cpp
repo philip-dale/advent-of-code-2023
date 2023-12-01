@@ -1,6 +1,7 @@
 #include "data.h"
 
 #include "../tools/tools.h"
+#include "../tools/types.h"
 
 #include <cstdint>
 #include <iostream>

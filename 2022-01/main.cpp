@@ -1,4 +1,5 @@
 #include "../tools/tools.h"
+#include "../tools/types.h"
 
 #include <algorithm>
 #include <cstdint>
