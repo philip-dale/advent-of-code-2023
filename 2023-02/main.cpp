@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <iostream>
 #include <regex>
-#include <limits>
 
 class cube_game {
 public:
@@ -30,24 +29,18 @@ public:
         std::getline(input, val);
 
         auto base = str_to_vec<std::string>(val, ":");
+        auto id = string_to<str_num>(base[0]);
 
-        std::regex id_split("^Game (\\d+)");
-        std::smatch id_match;
-        std::regex_search(base[0], id_match, id_split);
-        g.id = stoi(id_match[1].str());
+        g.id = id.get_num();
 
         auto hands = str_to_vec<std::string>(base[1], ";");
-
         for(auto &&hand : hands)
         {
-            auto pulls = str_to_vec<std::string>(hand, ",");
+            auto pulls = str_to_vec<num_str>(hand, ",");
             for(auto &&pull : pulls)
             {
-                std::regex pull_split(" ?(\\d+) (.+)");
-                std::smatch pull_match;
-                std::regex_search(pull, pull_match, pull_split);
-                auto colour = pull_match[2].str();
-                auto count = stoi(pull_match[1].str());
+                auto colour = pull.get_str();
+                auto count = pull.get_num();
                 if(colour == "blue")
                 {
                     if(count > g.blue_max)

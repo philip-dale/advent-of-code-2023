@@ -2,6 +2,7 @@
 #include "tools.h"
 
 #include <iostream>
+#include <regex>
 #include <streambuf>
 #include <vector>
 
@@ -86,6 +87,62 @@ public:
 
 private:
     std::string m_sep;
+};
+
+class num_str{
+public:
+    num_str() :
+        num{0},
+        str{""}
+    {};
+
+    friend std::ostream &operator<< ( std::ostream &output, const num_str &n ) { 
+        output << "num = " << n.num << ", str = " << n.str ;
+        return output;            
+    };
+
+    friend std::istream &operator>> ( std::istream  &input, num_str &n ) {
+        std::string val;
+        std::getline(input, val);
+        std::regex split(" ?(\\d+) (.+)");
+        std::smatch match;
+        std::regex_search(val, match, split);
+        n.num = stoi(match[1].str());
+        n.str = match[2].str();
+        return input;           
+    };
+
+    std::uint64_t get_num()
+    {
+        return num;
+    };
+
+    std::string get_str()
+    {
+        return str;
+    };
+
+protected:
+    std::uint64_t num;
+    std::string str;
+};
+
+class str_num : public num_str {
+public:
+    str_num() :
+        num_str()
+    {};
+
+    friend std::istream &operator>> ( std::istream  &input, str_num &n ) {
+        std::string val;
+        std::getline(input, val);
+        std::regex split(" ?(.+) (\\d+)");
+        std::smatch match;
+        std::regex_search(val, match, split);
+        n.num = stoi(match[2].str());
+        n.str = match[1].str();
+        return input;           
+    };
 };
 
 template<class T>
