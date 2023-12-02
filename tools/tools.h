@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#pragma warning( push )
+#pragma warning( disable : 4984)
+
 #ifdef _WIN32
     #define NEW_LINE "\r\n"
 #else
@@ -21,7 +24,11 @@ std::string file_to_string(std::string const& filename);
 template<class T> 
 T string_to(std::string const& str)
 {
-    std::stringstream convert(str);
+    if constexpr (std::is_same_v<T, std::string>)
+    {
+        return str;
+    }
+    std::istringstream convert(str);
     T value;
     convert >> value;
     return value;
@@ -130,3 +137,5 @@ void print_2d(std::vector<std::vector<T>> const& data, std::size_t width=3, char
         std::cout << "\n";
     }
 }
+
+#pragma warning( pop ) 
