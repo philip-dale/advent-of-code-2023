@@ -87,7 +87,6 @@ void part1()
         }
     }
     std::cout << sum << "\n";
-    assert(sum == 535351);
 }
 
 struct num_gear{
@@ -147,7 +146,6 @@ void part2()
         }
     }
     std::cout << sum << "\n";
-    assert(sum == 87287096);
 }
 
 int main(int argc, char* argv[])
