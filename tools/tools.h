@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#pragma warning( push )
-#pragma warning( disable : 4984)
 
 #ifdef _WIN32
     #define NEW_LINE "\r\n"
@@ -20,6 +18,10 @@
 std::string to_string(std::vector<std::uint8_t> const & data);
 std::string to_hex_string(std::vector<std::uint8_t> const & data);
 std::string file_to_string(std::string const& filename);
+
+#pragma warning( push )
+#pragma warning( disable : 4984)
+
 
 template<class T> 
 T string_to(std::string const& str)
@@ -33,6 +35,8 @@ T string_to(std::string const& str)
     convert >> value;
     return value;
 }
+
+#pragma warning( pop ) 
 
 template<class T> 
 T string_to(std::string const& str, std::string const & sep)
@@ -138,4 +142,37 @@ void print_2d(std::vector<std::vector<T>> const& data, std::size_t width=3, char
     }
 }
 
-#pragma warning( pop ) 
+struct area {
+    std::size_t row_start;
+    std::size_t col_start;
+    std::size_t row_end;
+    std::size_t col_end;
+
+    std::size_t row_size()
+    {
+        return row_end - row_start + 1;
+    };
+    std::size_t col_size()
+    {
+        return col_end - col_start + 1;
+    };
+    std::size_t area_size()
+    {
+        return row_size() * col_size();
+    };
+};
+
+template<class T>
+area get_bounding_box(std::vector<T> const & input_vec, area const & input_area, std::size_t width)
+{
+    auto ret = area{0,0,0,0};
+    auto col_size = input_vec[0].size();
+    auto row_size = input_vec.size();
+
+    ret.col_start = input_area.col_start >= width ? input_area.col_start - width : 0;
+    ret.col_end = input_area.col_end <= col_size - 1 - width ? input_area.col_end + width : col_size -1;
+    ret.row_start = input_area.row_start >= width ? input_area.row_start - width : 0;
+    ret.row_end = input_area.row_end <= row_size - 1 - width ? input_area.row_end + width : row_size -1;
+
+    return ret;
+};
