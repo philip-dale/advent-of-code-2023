@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-
 #ifdef _WIN32
     #define NEW_LINE "\r\n"
 #else
@@ -18,10 +17,6 @@
 std::string to_string(std::vector<std::uint8_t> const & data);
 std::string to_hex_string(std::vector<std::uint8_t> const & data);
 std::string file_to_string(std::string const& filename);
-
-#pragma warning( push )
-#pragma warning( disable : 4984)
-
 
 template<class T> 
 T string_to(std::string const& str)
@@ -35,8 +30,6 @@ T string_to(std::string const& str)
     convert >> value;
     return value;
 }
-
-#pragma warning( pop ) 
 
 template<class T> 
 T string_to(std::string const& str, std::string const & sep)

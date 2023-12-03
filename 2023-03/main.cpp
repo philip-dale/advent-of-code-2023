@@ -2,9 +2,9 @@
 #include "../tools/types.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <optional>
 
 bool scan_number(std::vector<std::string> const & input, std::size_t num_start, std::size_t num_size, std::size_t num_row)
 {
@@ -29,26 +29,38 @@ bool scan_number(std::vector<std::string> const & input, std::size_t num_start, 
     return false;
 }
 
-bool has_gear(std::vector<std::string> const & input, std::size_t num_start, std::size_t num_size, std::size_t num_row, std::size_t & g_col, std::size_t & g_row)
+struct num_gear{
+    std::int32_t num;
+    std::size_t col;
+    std::size_t row;
+
+    bool operator==(const num_gear& b)
+    {
+        return col == b.col && row == b.row;
+    }
+};
+
+
+std::optional<num_gear> has_gear(std::vector<std::string> const & input, std::size_t num_start, std::size_t num_size, std::size_t num_row)
 {
     auto box = get_bounding_box<std::string>(input, area{num_row, num_start, num_row, num_start + num_size-1}, 1);
     
-    for(g_col = box.col_start; g_col <= box.col_end; ++g_col) 
+    for(auto col = box.col_start; col <= box.col_end; ++col) 
     {
-        for(g_row = box.row_start; g_row <= box.row_end; ++g_row) 
+        for(auto row = box.row_start; row <= box.row_end; ++row) 
         {
-            if(g_row == num_row && ( g_col > box.col_start && g_col < box.col_end ) )
+            if(row == num_row && ( col > box.col_start && col < box.col_end ) )
             {
                 continue;
             }
-            char current_char = input[g_row][g_col];
+            char current_char = input[row][col];
             if(current_char == '*')
             {
-                return true;
+                return num_gear{std::stoi(input[num_row].substr(num_start, num_size)), col, row};
             }
         }
     }
-    return false;
+    return {};
 }
 
 void part1()
@@ -89,18 +101,6 @@ void part1()
     std::cout << sum << "\n";
 }
 
-struct num_gear{
-    std::int32_t num;
-    std::size_t g_col;
-    std::size_t g_row;
-
-    bool operator==(const num_gear& b)
-    {
-        return g_col == b.g_col && g_row == b.g_row;
-    }
-};
-
-
 void part2()
 {
     // auto input = file_to_vec<std::string>("input_sample");
@@ -130,17 +130,15 @@ void part2()
             auto num_size = num_end - col;
 
             // Look for gears
-            std::size_t g_col{0};
-            std::size_t g_row{0};
-            if(has_gear(input, col, num_size, row, g_col, g_row))
+            auto new_gear = has_gear(input, col, num_size, row);
+            if(new_gear)
             {
-                auto new_gear = num_gear{std::stoi(input[row].substr(col, num_size)), g_col, g_row};
-                auto g = std::find(gears.begin(), gears.end(), new_gear);
+                auto g = std::find(gears.begin(), gears.end(), new_gear.value());
                 if(g != gears.end())
                 {
-                    sum += g->num * new_gear.num;
+                    sum += g->num * new_gear.value().num;
                 }
-                gears.emplace_back(new_gear);
+                gears.emplace_back(std::move(new_gear.value()));
             }
             col += num_size;
         }
