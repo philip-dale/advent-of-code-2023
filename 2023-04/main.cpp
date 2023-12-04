@@ -19,8 +19,20 @@ public:
         g.id = id.get_num();
 
         auto sides = str_to_vec<std::string>(base[1], "|");
+        
+        while(sides[0][0] == ' ')
+        {
+            sides[0].erase(0, 1);
+        }
+
+        while(sides[1][0] == ' ')
+        {
+            sides[1].erase(0, 1);
+        }
+
         g.wins = str_to_vec<uint32_t>(sides[0], " ");
         g.nums = str_to_vec<uint32_t>(sides[1], " ");
+
         return input;           
     };
 
@@ -39,14 +51,13 @@ public:
                 }
             }
         }
-        std::cout<< sum << "\n";
         return sum;
     }
 };
 
 void part1()
 {
-    auto games = file_to_vec<scrach_game>("input_sample");
+    auto games = file_to_vec<scrach_game>("input_actual");
     std::uint32_t sum = 0;
     for( auto &&g : games)
     {
