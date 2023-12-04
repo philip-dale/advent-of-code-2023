@@ -41,14 +41,25 @@ T string_to(std::string const& str, std::string const & sep)
 }
 
 template<class T>
-std::vector<T> str_to_vec_sep(std::string const& data, std::string const & sub_sep, std::string const& separator=NEW_LINE)
+std::vector<T> str_to_vec_sep(std::string const& data, std::string const & sub_sep, std::string const& separator=NEW_LINE, bool keep_empty = false)
 {
     auto ret = std::vector<T>{};
     std::size_t last_pos = 0;
     auto pos = data.find(separator, last_pos);
     while(pos != std::string::npos)
     {
-        ret.emplace_back(string_to<T>(data.substr(last_pos, pos-last_pos), sub_sep));
+        auto val = data.substr(last_pos, pos-last_pos);
+        if(val.empty())
+        {
+            if(keep_empty)
+            {
+                ret.emplace_back(T());
+            }
+        }
+        else
+        {
+            ret.emplace_back(string_to<T>(val));
+        }
         last_pos = pos + separator.size();
         pos = data.find(separator, last_pos);
     }
@@ -61,14 +72,25 @@ std::vector<T> str_to_vec_sep(std::string const& data, std::string const & sub_s
 };
 
 template<class T>
-std::vector<T> str_to_vec(std::string const& data, std::string const& separator=NEW_LINE)
+std::vector<T> str_to_vec(std::string const& data, std::string const& separator=NEW_LINE, bool keep_empty = false)
 {
     auto ret = std::vector<T>{};
     std::size_t last_pos = 0;
     auto pos = data.find(separator, last_pos);
     while(pos != std::string::npos)
     {
-        ret.emplace_back(string_to<T>(data.substr(last_pos, pos-last_pos)));
+        auto val = data.substr(last_pos, pos-last_pos);
+        if(val.empty())
+        {
+            if(keep_empty)
+            {
+                ret.emplace_back(T());
+            }
+        }
+        else
+        {
+            ret.emplace_back(string_to<T>(val));
+        }
         last_pos = pos + separator.size();
         pos = data.find(separator, last_pos);
     }
