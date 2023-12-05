@@ -162,24 +162,21 @@ public:
         }
     };
 
-    std::uint64_t get_seed_location(std::uint64_t seed)
+    std::vector<std::uint64_t> &seeds()
     {
-        auto v = seed;
-        for(auto &&g : m_groups)
-        {
-            g.apply_mapping(v);
-        }
-        return v;
+        return m_seeds;
     }
 
-    void get_seed_location(std::vector<range> & ranges)
+    template<class T>
+    void get_seed_location(T & seed)
     {
         for(auto &&g : m_groups)
         {
-            g.apply_mapping(ranges);
+            g.apply_mapping(seed);
         }
     }
 
+private:
     std::vector<std::uint64_t> m_seeds;
     std::vector<range_lookup_group> m_groups;
 };
@@ -188,9 +185,10 @@ void part1()
 {
     auto s = seeds_game(file_to_string("input_actual"));
     std::uint64_t result{std::numeric_limits<std::uint64_t>::max()};
-    for(auto &&seed : s.m_seeds)
+    for(auto &&seed : s.seeds())
     {
-        std::uint64_t loc = s.get_seed_location(seed);
+        std::uint64_t loc = seed;
+        s.get_seed_location(loc);
         if(loc < result)
         {
             result = loc;
@@ -204,9 +202,9 @@ void part2()
     auto s = seeds_game(file_to_string("input_actual"));
 
     auto ranges = std::vector<range>{};
-    for(auto i=0; i< s.m_seeds.size(); i+=2)
+    for(auto i=0; i< s.seeds().size(); i+=2)
     {
-        ranges.emplace_back(range(s.m_seeds[i], s.m_seeds[i] + s.m_seeds[i+1]));
+        ranges.emplace_back(range(s.seeds()[i], s.seeds()[i] + s.seeds()[i+1]));
     }
 
     s.get_seed_location(ranges);
