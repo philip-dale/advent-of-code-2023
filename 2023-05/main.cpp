@@ -6,77 +6,145 @@
 #include <map>
 #include <limits>
 
-class range_lookup {
+class range {
 public:
-    range_lookup(std::uint64_t start, std::uint64_t length, std::uint64_t result_start) :
+    range(std::uint64_t start, std::uint64_t end) :
         m_start{start},
-        m_length{length},
-        m_result_start{result_start}
+        m_end{end}
     {};
+
+    std::uint64_t start(){
+        return m_start;
+    };
+
+    std::uint64_t end(){
+        return m_end;
+    };
+
+    bool valid()
+    {
+        return m_start <= m_end;
+    }
 
     bool in_range(std::uint64_t v)
     {
-        return v >= m_start && v < m_start + m_length;
+        return v >= m_start && v < m_end;
     };
 
-    std::uint64_t get_mapping(std::uint64_t v)
+    bool in_range(range & r)
     {
-        return m_result_start + (v - m_start);
+        return r.start() >= m_start && r.end() <= m_end;
+    }
+
+    std::vector<range> spit_range(std::vector<range> ranges)
+    {
+        auto ret = std::vector<range>{};
+        for(auto && r : ranges)
+        {
+            // 3 posible outputs, left, mid, right
+            auto left = range(r.start(), std::min(r.end(), m_end));
+            if(left.valid())
+            {
+                ret.emplace_back(left);
+            }
+            auto mid = range(std::max(r.start(), m_end), std::min(r.end(), m_end));
+            if(mid.valid())
+            {
+                ret.emplace_back(mid);
+            }
+            auto right = range(std::max(r.start(), m_end), r.end());
+            if(right.valid())
+            {
+                ret.emplace_back(right);
+            }
+        }
+
+        return ret;
+    };
+protected:
+    std::uint64_t m_start;
+    std::uint64_t m_end;
+};
+
+class range_lookup : public range {
+public:
+    range_lookup(std::uint64_t start, std::uint64_t length, std::uint64_t result_start) :
+        range(start, start+length),
+        m_result_start{result_start}
+    {};
+
+    void apply_mapping(std::uint64_t & v)
+    {
+        v = m_result_start + (v - m_start);
     };
 
+    void apply_mapping(range & r)
+    {
+        r = range(m_result_start + (r.start() - m_start), m_result_start + (r.end() - m_start));
+    };
+
+    
 private:
-    std::uint64_t m_start;
-    std::uint64_t m_length;
     std::uint64_t m_result_start;
 };
 
-class range_map {
+class range_lookup_group {
 public:
-    range_map() :
-        m_ranges{}
+    range_lookup_group() :
+        m_range_lookups{}
     {};
 
-    void append(range_lookup const & l)
+    range_lookup_group(std::string const & s) :
+        m_range_lookups{}
     {
-        m_ranges.emplace_back(l);
+        auto lines = str_to_vec<std::string>(s);
+        for(auto &&line : lines)
+        {
+            auto vals = str_to_vec<std::uint64_t>(line, " ");
+            m_range_lookups.emplace_back(range_lookup(vals[1], vals[2], vals[0]));
+        }
     };
 
-    std::uint64_t find(std::uint64_t v)
+    void apply_mapping(std::uint64_t & v)
     {
-        for(auto &&range : m_ranges)
+        for(auto &&range : m_range_lookups)
         {
             if(range.in_range(v))
             {
-                return range.get_mapping(v);
+                range.apply_mapping(v);
+                return;
             }
         }
-        return v;
     };
 
-private:
-    std::vector<range_lookup> m_ranges;
-};
-
-range_map create_lookup(std::string & input)
-{
-    auto lines = str_to_vec<std::string>(input);
-    range_map ret{};
-    for(auto &&line : lines)
+    void apply_mapping(std::vector<range> & ranges)
     {
-        auto vals = str_to_vec<std::uint64_t>(line, " ");
-        ret.append(range_lookup(vals[1], vals[2], vals[0]));
-    }
-    return ret;
-}
+        for(auto &&range_lookup : m_range_lookups)
+        {
+            ranges = range_lookup.spit_range(ranges);
+        }
 
-std::uint64_t getval(range_map & m, std::uint64_t v) {
-    return m.find(v);
-}
+        // now appy mappings
+        for(auto i=0; i< ranges.size(); ++i)
+        {
+            for(auto &&range_lookup : m_range_lookups)
+            {
+                if(range_lookup.in_range(ranges[i]))
+                {
+                    range_lookup.apply_mapping(ranges[i]);
+                    break;
+                }
+            }
+        }
+    }
+
+private:
+    std::vector<range_lookup> m_range_lookups;
+};
 
 class seeds_game {
 public:
-    seeds_game(std::string const & input) :
-        m_cache{}
+    seeds_game(std::string const & input)
     {
         auto sections = str_to_vec<std::string>(input, std::string(NEW_LINE) + std::string(NEW_LINE));
         for( auto &&section : sections)
@@ -89,37 +157,37 @@ public:
             }
             if(fields[0] == "seed-to-soil map")
             {
-                m_seed_to_soil = create_lookup(fields[1]);
+                m_seed_to_soil = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "soil-to-fertilizer map")
             {
-                m_soil_to_fertilizer = create_lookup(fields[1]);
+                m_soil_to_fertilizer = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "fertilizer-to-water map")
             {
-                m_fertilizer_to_water = create_lookup(fields[1]);
+                m_fertilizer_to_water = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "water-to-light map")
             {
-                m_water_to_light = create_lookup(fields[1]);
+                m_water_to_light = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "light-to-temperature map")
             {
-                m_light_to_temperature = create_lookup(fields[1]);
+                m_light_to_temperature = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "temperature-to-humidity map")
             {
-                m_temperature_to_humidity = create_lookup(fields[1]);
+                m_temperature_to_humidity = range_lookup_group(fields[1]);
                 continue;
             }
             if(fields[0] == "humidity-to-location map")
             {
-                m_humidity_to_location = create_lookup(fields[1]);
+                m_humidity_to_location = range_lookup_group(fields[1]);
                 continue;
             }
         }
@@ -128,28 +196,35 @@ public:
     std::uint64_t get_seed_location(std::uint64_t seed)
     {
         auto v = seed;
-        v = getval(m_seed_to_soil, v);
-        v = getval(m_soil_to_fertilizer, v);
-        v = getval(m_fertilizer_to_water, v);
-        v = getval(m_water_to_light, v);
-        v = getval(m_light_to_temperature, v);
-        v = getval(m_temperature_to_humidity, v);
-        v = getval(m_humidity_to_location, v);
-        m_cache[seed] = v;
+        m_seed_to_soil.apply_mapping(v);
+        m_soil_to_fertilizer.apply_mapping(v);
+        m_fertilizer_to_water.apply_mapping(v);
+        m_water_to_light.apply_mapping(v);
+        m_light_to_temperature.apply_mapping(v);
+        m_temperature_to_humidity.apply_mapping(v);
+        m_humidity_to_location.apply_mapping(v);
         return v;
-        
+    }
+
+    void get_seed_location(std::vector<range> & ranges)
+    {
+        m_seed_to_soil.apply_mapping(ranges);
+        m_soil_to_fertilizer.apply_mapping(ranges);
+        m_fertilizer_to_water.apply_mapping(ranges);
+        m_water_to_light.apply_mapping(ranges);
+        m_light_to_temperature.apply_mapping(ranges);
+        m_temperature_to_humidity.apply_mapping(ranges);
+        m_humidity_to_location.apply_mapping(ranges);
     }
 
     std::vector<std::uint64_t> m_seeds;
-    range_map m_seed_to_soil;
-    range_map m_soil_to_fertilizer;
-    range_map m_fertilizer_to_water;
-    range_map m_water_to_light;
-    range_map m_light_to_temperature;
-    range_map m_temperature_to_humidity;
-    range_map m_humidity_to_location;
-
-    std::map<std::uint64_t, std::uint64_t> m_cache;
+    range_lookup_group m_seed_to_soil;
+    range_lookup_group m_soil_to_fertilizer;
+    range_lookup_group m_fertilizer_to_water;
+    range_lookup_group m_water_to_light;
+    range_lookup_group m_light_to_temperature;
+    range_lookup_group m_temperature_to_humidity;
+    range_lookup_group m_humidity_to_location;
 };
 
 void part1()
@@ -170,20 +245,24 @@ void part1()
 void part2()
 {
     auto s = seeds_game(file_to_string("input_actual"));
-    std::uint64_t result{std::numeric_limits<std::uint64_t>::max()};
+
+    auto ranges = std::vector<range>{};
     for(auto i=0; i< s.m_seeds.size(); i+=2)
     {
-        std::cout << "i = " << i << "\n";
-        for(auto j=s.m_seeds[i+0]; j<s.m_seeds[i+0] + s.m_seeds[i+1]; ++j)
+        ranges.emplace_back(range(s.m_seeds[i], s.m_seeds[i] + s.m_seeds[i+1]));
+    }
+
+    s.get_seed_location(ranges);
+
+    std::uint64_t result{std::numeric_limits<std::uint64_t>::max()};
+    for(auto &&r : ranges)
+    {
+        if(r.start() < result)
         {
-            
-            std::uint64_t loc = s.get_seed_location(j);
-            if(loc < result)
-            {
-                result = loc;
-            }
+            result = r.start();
         }
     }
+
     std::cout << result << "\n";
 }
 
