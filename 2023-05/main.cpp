@@ -8,26 +8,26 @@
 
 class range_lookup {
 public:
-    range_lookup(std::uint32_t start, std::uint32_t length, std::uint32_t result_start) :
+    range_lookup(std::uint64_t start, std::uint64_t length, std::uint64_t result_start) :
         m_start{start},
         m_length{length},
         m_result_start{result_start}
     {};
 
-    bool in_range(std::uint32_t v)
+    bool in_range(std::uint64_t v)
     {
         return v >= m_start && v < m_start + m_length;
     };
 
-    std::uint32_t get_mapping(std::uint32_t v)
+    std::uint64_t get_mapping(std::uint64_t v)
     {
         return m_result_start + (v - m_start);
     };
 
 private:
-    std::uint32_t m_start;
-    std::uint32_t m_length;
-    std::uint32_t m_result_start;
+    std::uint64_t m_start;
+    std::uint64_t m_length;
+    std::uint64_t m_result_start;
 };
 
 class range_map {
@@ -41,7 +41,7 @@ public:
         m_ranges.emplace_back(l);
     };
 
-    std::uint32_t find(std::uint32_t v)
+    std::uint64_t find(std::uint64_t v)
     {
         for(auto &&range : m_ranges)
         {
@@ -63,13 +63,13 @@ range_map create_lookup(std::string & input)
     range_map ret{};
     for(auto &&line : lines)
     {
-        auto vals = str_to_vec<std::uint32_t>(line, " ");
+        auto vals = str_to_vec<std::uint64_t>(line, " ");
         ret.append(range_lookup(vals[1], vals[2], vals[0]));
     }
     return ret;
 }
 
-std::uint32_t getval(range_map & m, std::uint32_t v) {
+std::uint64_t getval(range_map & m, std::uint64_t v) {
     return m.find(v);
 }
 
@@ -84,7 +84,7 @@ public:
             auto fields = str_to_vec<std::string>(section, ":");
             if(fields[0] == "seeds")
             {
-                m_seeds = str_to_vec<std::uint32_t>(fields[1], " ");
+                m_seeds = str_to_vec<std::uint64_t>(fields[1], " ");
                 continue;
             }
             if(fields[0] == "seed-to-soil map")
@@ -125,29 +125,22 @@ public:
         }
     };
 
-    std::uint32_t get_seed_location(std::uint32_t seed)
+    std::uint64_t get_seed_location(std::uint64_t seed)
     {
-        auto s_it = m_cache.find(seed);
-        if(s_it == m_cache.end())
-        {
-            auto v = seed;
-            v = getval(m_seed_to_soil, v);
-            v = getval(m_soil_to_fertilizer, v);
-            v = getval(m_fertilizer_to_water, v);
-            v = getval(m_water_to_light, v);
-            v = getval(m_light_to_temperature, v);
-            v = getval(m_temperature_to_humidity, v);
-            v = getval(m_humidity_to_location, v);
-            m_cache[seed] = v;
-            return v;
-        }
-        else
-        {
-            return s_it->second;
-        }
+        auto v = seed;
+        v = getval(m_seed_to_soil, v);
+        v = getval(m_soil_to_fertilizer, v);
+        v = getval(m_fertilizer_to_water, v);
+        v = getval(m_water_to_light, v);
+        v = getval(m_light_to_temperature, v);
+        v = getval(m_temperature_to_humidity, v);
+        v = getval(m_humidity_to_location, v);
+        m_cache[seed] = v;
+        return v;
+        
     }
 
-    std::vector<std::uint32_t> m_seeds;
+    std::vector<std::uint64_t> m_seeds;
     range_map m_seed_to_soil;
     range_map m_soil_to_fertilizer;
     range_map m_fertilizer_to_water;
@@ -156,16 +149,16 @@ public:
     range_map m_temperature_to_humidity;
     range_map m_humidity_to_location;
 
-    std::map<std::uint32_t, std::uint32_t> m_cache;
+    std::map<std::uint64_t, std::uint64_t> m_cache;
 };
 
 void part1()
 {
     auto s = seeds_game(file_to_string("input_actual"));
-    std::uint32_t result{std::numeric_limits<std::uint32_t>::max()};
+    std::uint64_t result{std::numeric_limits<std::uint64_t>::max()};
     for(auto &&seed : s.m_seeds)
     {
-        std::uint32_t loc = s.get_seed_location(seed);
+        std::uint64_t loc = s.get_seed_location(seed);
         if(loc < result)
         {
             result = loc;
@@ -177,12 +170,14 @@ void part1()
 void part2()
 {
     auto s = seeds_game(file_to_string("input_actual"));
-    std::uint32_t result{std::numeric_limits<std::uint32_t>::max()};
+    std::uint64_t result{std::numeric_limits<std::uint64_t>::max()};
     for(auto i=0; i< s.m_seeds.size(); i+=2)
     {
-        for(auto j=s.m_seeds[0]; j<s.m_seeds[0] + s.m_seeds[1]; ++j)
+        std::cout << "i = " << i << "\n";
+        for(auto j=s.m_seeds[i+0]; j<s.m_seeds[i+0] + s.m_seeds[i+1]; ++j)
         {
-            std::uint32_t loc = s.get_seed_location(j);
+            
+            std::uint64_t loc = s.get_seed_location(j);
             if(loc < result)
             {
                 result = loc;
