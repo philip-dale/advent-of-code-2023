@@ -83,7 +83,6 @@ public:
         r = range(m_result_start + (r.start() - m_start), m_result_start + (r.end() - m_start));
     };
 
-    
 private:
     std::uint64_t m_result_start;
 };
@@ -144,7 +143,8 @@ private:
 
 class seeds_game {
 public:
-    seeds_game(std::string const & input)
+    seeds_game(std::string const & input) :
+        m_groups{}
     {
         auto sections = str_to_vec<std::string>(input, std::string(NEW_LINE) + std::string(NEW_LINE));
         for( auto &&section : sections)
@@ -155,40 +155,9 @@ public:
                 m_seeds = str_to_vec<std::uint64_t>(fields[1], " ");
                 continue;
             }
-            if(fields[0] == "seed-to-soil map")
+            else
             {
-                m_seed_to_soil = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "soil-to-fertilizer map")
-            {
-                m_soil_to_fertilizer = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "fertilizer-to-water map")
-            {
-                m_fertilizer_to_water = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "water-to-light map")
-            {
-                m_water_to_light = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "light-to-temperature map")
-            {
-                m_light_to_temperature = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "temperature-to-humidity map")
-            {
-                m_temperature_to_humidity = range_lookup_group(fields[1]);
-                continue;
-            }
-            if(fields[0] == "humidity-to-location map")
-            {
-                m_humidity_to_location = range_lookup_group(fields[1]);
-                continue;
+                m_groups.emplace_back(range_lookup_group(fields[1]));
             }
         }
     };
@@ -196,35 +165,23 @@ public:
     std::uint64_t get_seed_location(std::uint64_t seed)
     {
         auto v = seed;
-        m_seed_to_soil.apply_mapping(v);
-        m_soil_to_fertilizer.apply_mapping(v);
-        m_fertilizer_to_water.apply_mapping(v);
-        m_water_to_light.apply_mapping(v);
-        m_light_to_temperature.apply_mapping(v);
-        m_temperature_to_humidity.apply_mapping(v);
-        m_humidity_to_location.apply_mapping(v);
+        for(auto &&g : m_groups)
+        {
+            g.apply_mapping(v);
+        }
         return v;
     }
 
     void get_seed_location(std::vector<range> & ranges)
     {
-        m_seed_to_soil.apply_mapping(ranges);
-        m_soil_to_fertilizer.apply_mapping(ranges);
-        m_fertilizer_to_water.apply_mapping(ranges);
-        m_water_to_light.apply_mapping(ranges);
-        m_light_to_temperature.apply_mapping(ranges);
-        m_temperature_to_humidity.apply_mapping(ranges);
-        m_humidity_to_location.apply_mapping(ranges);
+        for(auto &&g : m_groups)
+        {
+            g.apply_mapping(ranges);
+        }
     }
 
     std::vector<std::uint64_t> m_seeds;
-    range_lookup_group m_seed_to_soil;
-    range_lookup_group m_soil_to_fertilizer;
-    range_lookup_group m_fertilizer_to_water;
-    range_lookup_group m_water_to_light;
-    range_lookup_group m_light_to_temperature;
-    range_lookup_group m_temperature_to_humidity;
-    range_lookup_group m_humidity_to_location;
+    std::vector<range_lookup_group> m_groups;
 };
 
 void part1()
