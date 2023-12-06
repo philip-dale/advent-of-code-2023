@@ -9,6 +9,7 @@
                 "/EHsc",
                 "/nologo",
                 "/std:c++20",
+                "/O2",
                 "/Fo${workspaceFolder}/build/",
                 "/Fd${workspaceFolder}/build/",
                 "/Fe${workspaceFolder}/build/\\${fileDirnameBasename}.exe",
@@ -30,6 +31,7 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-std=c++2a",
+                "-O3",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${fileDirname}/*.cpp",

@@ -63,7 +63,6 @@ std::string remove_space(std::string & in)
     return out;
 }
 
-
 void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all, std::size_t end)
 {
     auto current_node = start;
