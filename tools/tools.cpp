@@ -31,3 +31,34 @@ std::string file_to_string(std::string const& filename)
     }
     throw(errno);
 }
+
+std::vector<double> solve_quad(double a, double b, double c)
+{
+    auto discriminant = (b*b) - (4*a*c);
+    auto result = std::vector<double>{};
+    if (discriminant > 0) {
+        result.emplace_back((-b + std::sqrt(discriminant)) / (2*a));
+        result.emplace_back((-b - std::sqrt(discriminant)) / (2*a));
+    }
+    else if (discriminant == 0) {
+        result.emplace_back(-b/(2*a));
+        result.emplace_back(-b/(2*a));
+    }
+    else {
+        // not doing imaginary numbers
+    }
+    return result;
+}
+
+std::string remove_space(std::string & in)
+{
+    auto out = std::string{};
+    for(auto &&c : in)
+    {
+        if(c != ' ')
+        {
+            out += c;
+        }
+    }
+    return out;
+}

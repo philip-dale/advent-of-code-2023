@@ -191,3 +191,6 @@ area get_bounding_box(std::vector<T> const & input_vec, area const & input_area,
 
     return ret;
 };
+
+std::vector<double> solve_quad(double a, double b, double c);
+std::string remove_space(std::string & in);

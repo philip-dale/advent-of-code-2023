@@ -74,6 +74,11 @@
         "string_view": "cpp",
         "shared_mutex": "cpp",
         "cinttypes": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "mutex": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     }
 }
