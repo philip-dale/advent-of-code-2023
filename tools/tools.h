@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #ifdef _WIN32
     #define NEW_LINE "\r\n"
@@ -194,3 +195,102 @@ area get_bounding_box(std::vector<T> const & input_vec, area const & input_area,
 
 std::vector<double> solve_quad(double a, double b, double c);
 std::string remove_space(std::string & in);
+
+class node {
+public:
+    node() :
+        m_id{0},
+        m_neighbours{},
+        m_dist{std::numeric_limits<std::uint32_t>::max()},
+        m_previous{0},
+        m_weight{0},
+        m_processed{false}
+    {};
+
+    node(std::size_t id, std::vector<std::size_t> & neighbours, std::uint32_t weight) :
+        m_id{id},
+        m_neighbours{neighbours},
+        m_dist{std::numeric_limits<std::uint32_t>::max()},
+        m_previous{},
+        m_weight{weight},
+        m_processed{false}
+    {};
+
+    bool update_dist(std::uint32_t v)
+    {
+        if(v < m_dist)
+        {
+            m_dist = v;
+            return true;
+        }
+        return false;
+    };
+
+    void set_previous(std::size_t p)
+    {
+        m_previous = p;
+        m_processed = true;
+    };
+
+    std::size_t get_previous()
+    {
+        return m_previous;
+    };
+
+    std::size_t id()
+    {
+        return m_id;
+    };
+
+    std::vector<std::size_t> neighbours()
+    {
+        return m_neighbours;
+    };
+
+    bool processed()
+    {
+        return m_processed;
+    };
+
+    std::uint32_t dist()
+    {
+        return m_dist;
+    };
+
+    std::uint32_t weight()
+    {
+        return m_weight;
+    };
+
+private:
+    std::size_t m_id;
+    std::vector<std::size_t> m_neighbours;
+    std::uint32_t m_dist;
+    std::size_t m_previous;
+    std::uint32_t m_weight;
+    bool m_processed;
+};
+
+template<class T>
+std::vector<node> two_d_vec_to_nodes(std::vector<std::vector<T>> & data)
+{
+    auto nodes = std::vector<node>(data.size() * data[0].size());
+    for(auto i=0; i<data.size(); ++i)
+    {
+        for(auto j=0; j<data.size(); ++j)
+        {
+            auto pos = j + (i*data[0].size());
+            auto neighbours = std::vector<std::size_t>{};
+            if(j != 0)              neighbours.emplace_back((j-1) + (i*data[0].size()));
+            if(j != data[0].size()) neighbours.emplace_back((j+1) + (i*data[0].size()));
+            if(i != 0)              neighbours.emplace_back(j + ((i-1)*data[0].size()));
+            if(i != data.size())    neighbours.emplace_back(j + ((i+1)*data[0].size()));
+
+            nodes[pos] = node(pos, neighbours, data[i][j]);
+        }
+    }
+    return nodes;
+}
+
+
+void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all = true, std::size_t end=0);

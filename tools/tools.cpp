@@ -62,3 +62,40 @@ std::string remove_space(std::string & in)
     }
     return out;
 }
+
+
+void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all, std::size_t end)
+{
+    auto current_node = start;
+    nodes[current_node].update_dist(0);
+    bool running = true;
+    while(running)
+    {
+        nodes[current_node].set_previous(0);
+        
+        for(auto neighbour : nodes[current_node].neighbours())
+        {
+            if(!nodes[neighbour].processed())
+            {
+                auto new_dist = nodes[current_node].dist() + nodes[neighbour].weight();
+                nodes[neighbour].update_dist(new_dist);
+            }
+        }
+        if(!do_all && current_node == end)
+        {
+            return;
+        }
+
+        auto next_dist = std::numeric_limits<std::uint32_t>::max();
+        running = false;
+        for(auto &&node : nodes)
+        {
+            if(!node.processed() && node.dist() < next_dist)
+            {
+                current_node = node.id();
+                next_dist = node.dist();
+                running = true;
+            }
+        }
+    }
+}
