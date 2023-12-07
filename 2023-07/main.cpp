@@ -65,25 +65,23 @@ public:
 
         // Figure out what type of hand we have
         auto card_counts = std::map<char, std::size_t>{};
+        auto jokers_count = std::uint32_t{0};
         for(auto &&c : g.m_cards)
         {
-            
-            if(JOKERS_WILD)
+            if(c == 'J')
             {
-                
+                jokers_count += 1;
+            }
+            if(card_counts.contains(c))
+            {
+                card_counts[c] = card_counts[c] + 1;
             }
             else
             {
-                if(card_counts.contains(c))
-                {
-                    card_counts[c] = card_counts[c] + 1;
-                }
-                else
-                {
-                    card_counts[c] = 1;
-                }
+                card_counts[c] = 1;
             }
         }
+        
         auto sorted_cards = std::vector<std::pair<char, std::uint32_t>>{};
         for(auto &&c : card_counts)
         {
@@ -93,6 +91,15 @@ public:
         {
             return a.second > b.second;
         });
+
+        if(JOKERS_WILD)
+        {
+            sorted_cards[0].second += jokers_count;
+            if(sorted_cards.size() > 1)
+            {
+                sorted_cards.pop_back();
+            }
+        }
 
         switch(sorted_cards.size())
         {
