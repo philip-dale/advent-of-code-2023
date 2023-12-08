@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <numeric>
+#include <cmath>
 
 #ifdef _WIN32
     #define NEW_LINE "\r\n"
@@ -292,5 +294,16 @@ std::vector<node> two_d_vec_to_nodes(std::vector<std::vector<T>> & data)
     return nodes;
 }
 
+template<class T>
+T lcm(std::vector<T> & v)
+{
+    // Use Chinese remainder theorem to get lowest common multiple
+    auto lcm = T{1};
+    for(auto && n : v)
+    {
+        lcm = std::floor((n*lcm)/std::gcd(n,lcm));
+    }
+    return lcm;
+}
 
 void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all = true, std::size_t end=0);
