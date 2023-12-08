@@ -49,4 +49,6 @@ int main(int argc, char* argv[])
     // Test dijkstra
     test_dijkstra();
 
+    auto lcm_val = lcm(std::vector<std::size_t>{2, 6, 7});
+    std::cout << lcm_val << "\n";
 }   

@@ -295,7 +295,7 @@ std::vector<node> two_d_vec_to_nodes(std::vector<std::vector<T>> & data)
 }
 
 template<class T>
-T lcm(std::vector<T> & v)
+T lcm(std::vector<T> const & v)
 {
     // Use Chinese remainder theorem to get lowest common multiple
     auto lcm = T{1};

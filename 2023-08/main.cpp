@@ -32,35 +32,38 @@ public:
         }
     };
     
+    std::size_t count_steps(std::string const & starting_node, std::string const & end_node)
+    {
+        auto steps = std::size_t{0};
+        auto instruction_index = std::size_t{0};
+        auto current_key = starting_node;
+        while(!current_key.ends_with(end_node))
+        {
+            if(instructions[instruction_index] == 'L')
+            {
+                current_key = nodes[current_key].first;
+            }
+            else
+            {
+                current_key = nodes[current_key].second;
+            }
+            steps += 1;
+            instruction_index += 1;
+            if(instruction_index >= instructions.size())
+            {
+                instruction_index = 0;
+            }
+        }
+        return steps;
+    }
 
 };
 
 void part1()
 {
     auto game = node_game("input_actual");
-
-    auto steps = std::size_t{0};
-    auto instruction_index = std::size_t{0};
-    auto current_key = std::string("AAA");
-    while(current_key != "ZZZ")
-    {
-        if(game.instructions[instruction_index] == 'L')
-        {
-            current_key = game.nodes[current_key].first;
-        }
-        else
-        {
-            current_key = game.nodes[current_key].second;
-        }
-        steps += 1;
-        instruction_index += 1;
-        if(instruction_index >= game.instructions.size())
-        {
-            instruction_index = 0;
-        }
-    }
+    auto steps = game.count_steps("AAA", "ZZZ");
     std::cout << steps << "\n";
-
 }
 
 void part2()
@@ -75,35 +78,13 @@ void part2()
             current_nodes.emplace_back(n.first);
         }
     }
-    auto all_steps = std::vector<std::size_t>{};
-
-
+    auto steps = std::vector<std::size_t>{};
     for(auto && cn : current_nodes)
     {
-        auto steps = std::size_t{0};
-        auto instruction_index = std::size_t{0};
-        auto current_key = cn;
-        while(current_key[2] != 'Z')
-        {
-            if(game.instructions[instruction_index] == 'L')
-            {
-                current_key = game.nodes[current_key].first;
-            }
-            else
-            {
-                current_key = game.nodes[current_key].second;
-            }
-            steps += 1;
-            instruction_index += 1;
-            if(instruction_index >= game.instructions.size())
-            {
-                instruction_index = 0;
-            }
-        }
-        all_steps.emplace_back(steps);
+        steps.emplace_back(game.count_steps(cn, "Z"));
     }
 
-    auto result = lcm(all_steps);
+    auto result = lcm(steps);
         
     std::cout << result << "\n";
 }
