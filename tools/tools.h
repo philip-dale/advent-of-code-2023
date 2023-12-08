@@ -249,6 +249,11 @@ public:
         return m_neighbours;
     };
 
+    void add_neighbour(std::size_t n)
+    {
+        m_neighbours.emplace_back(n);
+    }
+
     bool processed()
     {
         return m_processed;
