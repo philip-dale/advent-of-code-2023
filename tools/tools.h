@@ -274,6 +274,84 @@ private:
 };
 
 template<class T>
+std::vector<std::pair<std::size_t, std::size_t>> aLL_neighbours_2d(std::vector<std::vector<T>> & data, std::size_t x, std::size_t y)
+{
+    auto neighbours = std::vector<std::pair<std::size_t, std::size_t>>{};
+    if(x != 0)
+    {
+        neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y));
+        if(y != 0)
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y-1));
+        }
+        if(y != data.size())
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y+1));
+        } 
+    }
+    if(x != data[0].size())
+    {
+        neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y));
+        if(y != 0)
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y-1));
+        }
+        if(y != data.size())
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y+1));
+        } 
+    }
+    if(y != 0)
+    {
+        neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y-1));
+        if(x != 0)
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y-1));
+        }
+        if(x != data[0].size())
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y-1));
+        }
+    }
+    if(y != data.size())
+    {
+        neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y+1));
+        if(x != 0)
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y+1));
+        }
+        if(x != data[0].size())
+        {
+            neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y+1));
+        }
+    } 
+    return neighbours;
+}
+
+template<class T>
+std::vector<std::pair<std::size_t, std::size_t>> adjacent_neighbours_2d(std::vector<std::vector<T>> & data, std::size_t x, std::size_t y)
+{
+    auto neighbours = std::vector<std::pair<std::size_t, std::size_t>>{};
+    if(x != 0)              neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y));
+    if(x != data[0].size()) neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y));
+    if(y != 0)              neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y-1));
+    if(y != data.size())    neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y+1));  
+    return neighbours;
+}
+
+template<class T>
+std::vector<std::size_t> adjacent_neighbours_1d(std::vector<std::vector<T>> & data, std::size_t x, std::size_t y)
+{
+    auto points = adjacent_neighbours_2d(data, x, y);
+    auto neighbours = std::vector<std::size_t>{};
+    for(auto &&p : points)
+    {
+        neighbours.emplace_back(p.first +  (p.second*data[0].size()));
+    }
+    return neighbours;
+}
+
+template<class T>
 std::vector<node> two_d_vec_to_nodes(std::vector<std::vector<T>> & data)
 {
     auto nodes = std::vector<node>(data.size() * data[0].size());
@@ -282,12 +360,7 @@ std::vector<node> two_d_vec_to_nodes(std::vector<std::vector<T>> & data)
         for(auto j=0; j<data.size(); ++j)
         {
             auto pos = j + (i*data[0].size());
-            auto neighbours = std::vector<std::size_t>{};
-            if(j != 0)              neighbours.emplace_back((j-1) + (i*data[0].size()));
-            if(j != data[0].size()) neighbours.emplace_back((j+1) + (i*data[0].size()));
-            if(i != 0)              neighbours.emplace_back(j + ((i-1)*data[0].size()));
-            if(i != data.size())    neighbours.emplace_back(j + ((i+1)*data[0].size()));
-
+            auto neighbours = adjacent_neighbours_1d(data, j, i);
             nodes[pos] = node(pos, neighbours, data[i][j]);
         }
     }
