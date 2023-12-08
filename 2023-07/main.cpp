@@ -64,7 +64,7 @@ public:
         g.m_bet = stoi(parts[1]);
 
         // Figure out what type of hand we have
-        auto card_counts = std::map<char, std::size_t>{};
+        auto card_counts = std::map<char, std::uint32_t>{};
         auto jokers_count = std::uint32_t{0};
         for(auto &&c : g.m_cards)
         {
@@ -94,10 +94,27 @@ public:
 
         if(JOKERS_WILD)
         {
-            sorted_cards[0].second += jokers_count;
-            if(sorted_cards.size() > 1)
+            if(sorted_cards[0].first == 'J')
             {
-                sorted_cards.pop_back();
+                sorted_cards[1].second += jokers_count;
+            }
+            else
+            {
+                sorted_cards[0].second += jokers_count;
+            }
+            
+            if(sorted_cards.size() > 1 && jokers_count > 0)
+            {
+                auto jokers_index = std::size_t{0};
+                for(auto i=0; i<sorted_cards.size(); i++)
+                {
+                    if(sorted_cards[i].first == 'J')
+                    {
+                        jokers_index = i;
+                        break;
+                    }
+                }
+                sorted_cards.erase(sorted_cards.begin() + jokers_index);
             }
         }
 
@@ -160,9 +177,8 @@ private:
 
 };
 
-void part1()
+void play()
 {
-    JOKERS_WILD = false;
     auto hands = file_to_vec<hand>("input_actual");
     std::sort(hands.begin(), hands.end(), [](hand & a, hand & b){
         for(auto i=0; i<a.scores().size(); ++i)
@@ -183,27 +199,16 @@ void part1()
     std::cout << sum << "\n";
 }
 
+void part1()
+{
+    JOKERS_WILD = false;
+    play();
+}
+
 void part2()
 {
     JOKERS_WILD = true;
-    auto hands = file_to_vec<hand>("input_actual");
-    std::sort(hands.begin(), hands.end(), [](hand & a, hand & b){
-        for(auto i=0; i<a.scores().size(); ++i)
-        {
-            if(a.scores()[i] == b.scores()[i])
-            {
-                continue;
-            }
-            return a.scores()[i] < b.scores()[i];
-        }
-        return false;
-    });
-    std::uint32_t sum{0};
-    for(auto i=0; i<hands.size(); ++i)
-    {
-        sum += (i+1)*hands[i].bet();
-    }
-    std::cout << sum << "\n";
+    play();
 }
 
 int main(int argc, char* argv[])
