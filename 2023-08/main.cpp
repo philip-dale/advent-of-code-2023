@@ -103,7 +103,6 @@ void part2()
         all_steps.emplace_back(steps);
     }
 
-    // Use Chinese remainder theorem to get lowest common multiple
     auto result = lcm(all_steps);
         
     std::cout << result << "\n";
