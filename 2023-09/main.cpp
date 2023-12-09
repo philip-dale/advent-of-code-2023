@@ -26,32 +26,32 @@ std::vector<std::int64_t> get_diff(std::vector<std::int64_t> & v)
     return ret;
 }
 
-std::pair<std::int64_t,std::int64_t> game(std::string file_name)
+typedef std::pair<std::int64_t,std::int64_t> game_t;
+
+game_t game(std::string file_name)
 {
+    auto ret = game_t{0,0};
     auto lines = file_to_vec<std::string>(file_name);
-    auto sum_next = std::int64_t{0};
-    auto sum_prev = std::int64_t{0};
     for(auto &&l : lines)
     {
-        auto patterns = std::vector<std::vector<std::int64_t>>{};
-        patterns.emplace_back(str_to_vec<std::int64_t>(l, " "));
+        auto patterns = std::vector<std::vector<std::int64_t>> {
+            str_to_vec<std::int64_t>(l, " ")
+        };
 
         while(!sum_zero(patterns[patterns.size()-1]))
         {
             patterns.emplace_back(get_diff(patterns[patterns.size()-1]));
         }
-
-        auto next_diff = std::int64_t{0};
-        auto prev_diff = std::int64_t{0};
+        game_t diff{0,0};
         for(std::int64_t i=patterns.size()-2; i >=0; --i)
         {
-            next_diff += patterns[i][patterns[i].size()-1];
-            prev_diff = patterns[i][0] - prev_diff;
+            diff.second += patterns[i][patterns[i].size()-1];
+            diff.first = patterns[i][0] - diff.first;
         }
-        sum_next += next_diff;
-        sum_prev += prev_diff;
+        ret.second += diff.second;
+        ret.first += diff.first;
     }
-    return {sum_prev, sum_next};
+    return ret;
 }
 
 
