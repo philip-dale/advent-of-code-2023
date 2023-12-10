@@ -338,9 +338,9 @@ std::vector<std::pair<std::size_t, std::size_t>> adjacent_neighbours_2d(std::vec
 {
     auto neighbours = std::vector<std::pair<std::size_t, std::size_t>>{};
     if(x != 0)              neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x-1, y));
-    if(x != data[0].size()) neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y));
+    if(x != data[0].size()-1) neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x+1, y));
     if(y != 0)              neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y-1));
-    if(y != data.size())    neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y+1));  
+    if(y != data.size()-1)    neighbours.emplace_back(std::pair<std::size_t, std::size_t>(x, y+1));  
     return neighbours;
 }
 
