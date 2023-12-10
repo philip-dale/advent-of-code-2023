@@ -98,3 +98,22 @@ void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all, std::si
         }
     }
 }
+
+// Calculate value of shoelace formula
+std::int64_t get_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape)
+{
+    auto area = std::int64_t{0};
+    auto j = shape.size() - 1;
+    for (auto i = 0; i < shape.size(); ++i)
+    {
+        area += (shape[j].first - shape[i].first) * (shape[j].second + shape[i].second);
+        j = i;
+    }
+    return std::abs(area) / 2;
+}
+
+std::int64_t get_pick_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape, std::size_t edge_count)
+{
+    auto area = get_area(shape);
+    return area - (edge_count/2) + 1;
+}

@@ -385,3 +385,6 @@ T lcm(std::vector<T> const & v)
 }
 
 void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all = true, std::size_t end=0);
+
+std::int64_t get_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape);
+std::int64_t get_pick_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape, std::size_t edge_count);

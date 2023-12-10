@@ -113,19 +113,6 @@ void part1()
     std::cout << step_count/2 << "\n";
 }
 
-// Calculate value of shoelace formula
-std::int64_t get_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape)
-{
-    auto area = std::int64_t{0};
-    auto j = shape.size() - 1;
-    for (auto i = 0; i < shape.size(); ++i)
-    {
-        area += (shape[j].first - shape[i].first) * (shape[j].second + shape[i].second);
-        j = i;
-    }
-    return std::abs(area) / 2;
-}
-
 void part2()
 {
     auto map_lines = file_to_vec<std::string>("input_actual");
@@ -191,11 +178,7 @@ void part2()
         }
     }
 
-    auto area = get_area(shape_vertex);
-    // Pick Theorem states that: S = I + B / 2 - 1 Where S — polygon area, I — number of points strictly inside polygon and B — Number of points on boundary.
-    auto pick = area - (shape.size()/2) + 1;
-
-    std::cout << pick << "\n";
+    std::cout << get_pick_area(shape_vertex, shape.size()) << "\n";
 }
 
 int main(int argc, char* argv[])
