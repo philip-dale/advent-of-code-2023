@@ -7,12 +7,12 @@
 
 void get_distances(std::string const& file_name, std::int64_t increment)
 {
-       auto lines = file_to_vec<std::string>("input_actual");
+    auto lines = file_to_vec<std::string>("input_actual");
     auto col_sums = std::vector<std::uint32_t>(lines[0].size(), 0);
     auto row_sums = std::vector<std::uint32_t>{};
     auto universe = std::vector<std::vector<char>>{};
     auto galaxies = std::vector<std::pair<std::int64_t, std::int64_t>>{};
-
+    auto row_count = std::size_t{0};
     for(auto &&l : lines)
     {
         auto row = std::vector<char>{};
@@ -23,11 +23,12 @@ void get_distances(std::string const& file_name, std::int64_t increment)
             if(l[i] == '#')
             {
                 col_sums[i]++;
-                row_sums[row_sums.size()-1]++;
-                galaxies.emplace_back(std::pair<std::int64_t, std::int64_t>{row_sums.size()-1,i});
+                row_sums[row_count]++;
+                galaxies.emplace_back(std::pair<std::int64_t, std::int64_t>{row_count,i});
             }
         }
         universe.emplace_back(row);
+        row_count++;
     }
     
     // Expand Universe
