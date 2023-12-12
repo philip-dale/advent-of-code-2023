@@ -3,11 +3,13 @@
 
 #include <cstdint>
 #include <iostream>
+#include <map>
 
-std::uint32_t count_possibles(std::string & group, std::size_t group_start, std::vector<std::size_t> & counts, std::size_t counts_start)
+typedef std::map<std::string, std::uint64_t> cache_map;
+
+std::uint64_t count_possibles(std::string const& group, std::size_t const group_start, std::vector<std::size_t> const & counts, std::size_t const counts_start, cache_map & cache)
 {
-
-    if(group.size() == group_start)
+    if(group_start >= group.size())
     {
         if(counts.size() == counts_start)
         {
@@ -27,12 +29,18 @@ std::uint32_t count_possibles(std::string & group, std::size_t group_start, std:
         }
     }
 
-    auto count = std::uint32_t{0};
+    auto cache_key = std::to_string(group_start) + "_" + std::to_string(counts_start);
+    if(cache.contains(cache_key))
+    {
+        return cache[cache_key];
+    }
+
+    auto count = std::uint64_t{0};
 
     // process . or if ? is a .
     if(group[group_start] == '.' || group[group_start] == '?')
     {
-        count += count_possibles(group, group_start+1, counts, counts_start);
+        count += count_possibles(group, group_start+1, counts, counts_start, cache);
     }
 
     // process # or if ? is a #
@@ -45,44 +53,60 @@ std::uint32_t count_possibles(std::string & group, std::size_t group_start, std:
         }
         auto posible_fail_size = posible_fail_end - group_start;
 
-        if(posible_fail_size < counts[counts_start])
+        // Check we will fit
+        if(posible_fail_size >= counts[counts_start])
         {
-            // wont fit
-            return count;
-        }
-        // Character after match cannot be a #
-        if(group_start + counts[counts_start] < group.size())
-        {
-            if(group[group_start + counts[counts_start]] == '#')
+            // Character after match cannot be a #
+            if(!(group_start + counts[counts_start] < group.size() && group[group_start + counts[counts_start]] == '#'))
             {
-                return count;
+                count += count_possibles(group, group_start+counts[counts_start]+1, counts, counts_start+1, cache);
             }
         }
-        count += count_possibles(group, group_start+counts[counts_start]+1, counts, counts_start+1);
     }
-    
 
+    cache[cache_key] = count;
     return count;
 }
 
 void part1()
 {
     auto lines = file_to_vec<std::string>("input_actual");
-    auto sum = std::uint32_t{0};
+    auto sum = std::uint64_t{0};
     for(auto &&l : lines)
     {
         auto parts = str_to_vec<std::string>(l, " ");
         auto group = parts[0];
         auto counts = str_to_vec<std::size_t>(parts[1], ",");
-        auto line_count = count_possibles(group, 0, counts, 0);
-        // std::cout << "Line = " << line_count << "\n";
-        sum += line_count;
+        auto cache = cache_map{};
+        sum += count_possibles(group, 0, counts, 0, cache);
     }
     std::cout << sum << "\n";
 }
 
 void part2()
 {
+    auto lines = file_to_vec<std::string>("input_actual");
+    auto sum = std::uint64_t{0};
+    for(auto &&l : lines)
+    {
+        auto parts = str_to_vec<std::string>(l, " ");
+
+        auto group_base = parts[0];
+        auto group = group_base;
+        auto counts_base = str_to_vec<std::size_t>(parts[1], ",");
+        auto counts = counts_base;
+        for(auto i=0; i<4; i++)
+        {
+            group += "?"+group_base;
+            for(auto &&c : counts_base)
+            {
+                counts.emplace_back(c);
+            }
+        }
+        auto cache = cache_map{};
+        sum += count_possibles(group, 0, counts, 0, cache);
+    }
+    std::cout << sum << "\n";
 }
 
 int main(int argc, char* argv[])
