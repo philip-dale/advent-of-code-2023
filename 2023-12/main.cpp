@@ -11,22 +11,12 @@ std::uint64_t count_possibles(std::string const& group, std::size_t const group_
 {
     if(group_start >= group.size())
     {
-        if(counts.size() == counts_start)
-        {
-            return 1;
-        }
-        return 0;
+        return counts.size() == counts_start? 1 : 0;
     }
-    else
+
+    if(counts.size() == counts_start)
     {
-        if(counts.size() == counts_start)
-        {
-            if(group.find_first_of('#', group_start) == std::string::npos)
-            {
-                return 1;
-            }
-            return 0;
-        }
+        return group.find_first_of('#', group_start) == std::string::npos? 1 : 0;
     }
 
     auto cache_key = std::to_string(group_start) + "_" + std::to_string(counts_start);
@@ -36,31 +26,19 @@ std::uint64_t count_possibles(std::string const& group, std::size_t const group_
     }
 
     auto count = std::uint64_t{0};
-
-    // process . or if ? is a .
     if(group[group_start] == '.' || group[group_start] == '?')
     {
         count += count_possibles(group, group_start+1, counts, counts_start, cache);
     }
 
-    // process # or if ? is a #
     if(group[group_start] == '#' || group[group_start] == '?')
     {
         auto posible_fail_end = group.find_first_of('.', group_start);
-        if(posible_fail_end == std::string::npos)
+        auto posible_fail_size = posible_fail_end == std::string::npos ? group.size() - group_start : posible_fail_end - group_start;
+        // Check we will fit and Character after match cannot be a #
+        if(posible_fail_size >= counts[counts_start] && group[group_start + counts[counts_start]] != '#')
         {
-            posible_fail_end = group.size();
-        }
-        auto posible_fail_size = posible_fail_end - group_start;
-
-        // Check we will fit
-        if(posible_fail_size >= counts[counts_start])
-        {
-            // Character after match cannot be a #
-            if(!(group_start + counts[counts_start] < group.size() && group[group_start + counts[counts_start]] == '#'))
-            {
-                count += count_possibles(group, group_start+counts[counts_start]+1, counts, counts_start+1, cache);
-            }
+            count += count_possibles(group, group_start+counts[counts_start]+1, counts, counts_start+1, cache);
         }
     }
 
