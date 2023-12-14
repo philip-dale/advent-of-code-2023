@@ -6,13 +6,6 @@
 #include <iostream>
 #include <map>
 
-enum class direction{
-    north = 0,
-    south,
-    east,
-    west,
-};
-
 void tilt_north(std::vector<std::string> & board)
 {
     for(auto r=1; r<board.size(); ++r)
@@ -121,10 +114,10 @@ std::int64_t get_weight(std::vector<std::string> & board)
 
 std::string board_string(std::vector<std::string> & a)
 {
-    auto ret=std::string{};
-    for(auto r=0; r < a.size(); ++r)
+    auto ret = std::string{};
+    for(auto && r : a)
     {
-        ret += a[r];
+        ret += r;
     }
     return ret;
 }
