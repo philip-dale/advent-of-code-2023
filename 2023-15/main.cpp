@@ -15,10 +15,7 @@ public:
 
     void add(lens_info const& l)
     {
-        auto pos = std::find_if(slots.begin(), slots.end(), [l](lens_info const& a)
-        {
-            return a.first == l.first;
-        });
+        auto pos = find(l);
         if(pos == slots.end())
         {
             slots.emplace_back(l);
@@ -31,10 +28,7 @@ public:
 
     void remove(lens_info const& l)
     {
-        auto pos = std::find_if(slots.begin(), slots.end(), [l](lens_info const& a)
-        {
-            return a.first == l.first;
-        });
+        auto pos = find(l);
         if(pos != slots.end())
         {
             slots.erase(pos);
@@ -52,6 +46,15 @@ public:
     };
 
 private:
+    std::vector<lens_info>::iterator find(lens_info const& l)
+    {
+        auto pos = std::find_if(slots.begin(), slots.end(), [l](lens_info const& a)
+        {
+            return a.first == l.first;
+        });
+        return pos;
+    }
+
     std::vector<lens_info> slots;
 };
 
