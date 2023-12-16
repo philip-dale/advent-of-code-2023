@@ -18,61 +18,60 @@ enum class FromDir
 
 FromDir get_from_dir(Position const& d)
 {
+    auto ret = FromDir::RIGHT;
     if(d.first == 1 && d.second == 0)
     {
-        return FromDir::RIGHT;
+        ret = FromDir::RIGHT;
     }
     if(d.first == -1 && d.second == 0)
     {
-        return FromDir::LEFT;
+        ret = FromDir::LEFT;
     }
     if(d.first == 0 && d.second == 1)
     {
-        return FromDir::TOP;
+        ret = FromDir::TOP;
     }
     if(d.first == 0 && d.second == -1)
     {
-        return FromDir::BOTTOM;
+        ret = FromDir::BOTTOM;
     }
-    return FromDir::RIGHT;
+    return ret;
 }
 
 class Beam {
 public:
-    Beam(Position const& p) :
-        pos{p},
-        direction{1,0}
-    {};
-
     Beam(Position const& p, Position const& d) :
-        pos{p},
-        direction{d}
+        m_pos{p},
+        m_direction{d}
     {};
 
     void move()
     {
-        pos.first += direction.first;
-        pos.second += direction.second;
+        m_pos.first += m_direction.first;
+        m_pos.second += m_direction.second;
     }
 
-    Position const& get_pos()
+    Position const& pos()
     {
-        return pos;
+        return m_pos;
     }
 
-    FromDir get_dir()
+    FromDir from_dir()
     {
-        return get_from_dir(direction);
+        return get_from_dir(m_direction);
     }
 
     bool in_range(std::int64_t x, std::int64_t y)
     {
-        return pos.first >= 0 && pos.first < x && pos.second >= 0 && pos.second < y;
+        return m_pos.first >= 0 && 
+               m_pos.first < x && 
+               m_pos.second >= 0 && 
+               m_pos.second < y;
     }
 
     std::optional<Position> update_direction(char c)
     {
-        auto from = get_from_dir(direction);
+        auto from = get_from_dir(m_direction);
         switch(c)
         {
             case '.':
@@ -80,157 +79,116 @@ public:
             case '\\':
                 if(from == FromDir::RIGHT)
                 {
-                    direction = Position{0, 1};
+                    m_direction = Position{0, 1};
                 }
                 if(from == FromDir::LEFT)
                 {
-                    direction = Position{0, -1};
+                    m_direction = Position{0, -1};
                 }
                 if(from == FromDir::BOTTOM)
                 {
-                    direction = Position{-1, 0};
+                    m_direction = Position{-1, 0};
                 }
                 if(from == FromDir::TOP)
                 {
-                    direction = Position{1, 0};
+                    m_direction = Position{1, 0};
                 }
                 return{};
             case '/':
                 if(from == FromDir::RIGHT)
                 {
-                    direction = Position{0, -1};
+                    m_direction = Position{0, -1};
                 }
                 if(from == FromDir::LEFT)
                 {
-                    direction = Position{0, 1};
+                    m_direction = Position{0, 1};
                 }
                 if(from == FromDir::BOTTOM)
                 {
-                    direction = Position{1, 0};
+                    m_direction = Position{1, 0};
                 }
                 if(from == FromDir::TOP)
                 {
-                    direction = Position{-1, 0};
+                    m_direction = Position{-1, 0};
                 }
                 return{};
             case '|':
                 if(from == FromDir::RIGHT || from == FromDir::LEFT)
                 {
-                    direction = Position{0, 1};
+                    m_direction = Position{0, 1};
                     return Position{0, -1};
                 }
                 return {};
             case '-':
                 if(from == FromDir::TOP || from == FromDir::BOTTOM)
                 {
-                    direction = Position{1, 0};
+                    m_direction = Position{1, 0};
                     return Position{-1, 0};
                 }
                 return {};
-                
         }
         return{};
     }
 
 private:
-    Position pos;
-    Position direction;
+    Position m_pos;
+    Position m_direction;
 };
 
-typedef std::vector<std::vector<std::vector<FromDir>>> DirectionsMap;
+typedef std::vector<FromDir> DirVec;
+typedef std::vector<DirVec> DirLine;
+typedef std::vector<DirLine> DirMap;
 
 class Board {
 public:
-    Board(std::string const& filename)   
-    {
-        layout = file_to_vec<std::string>(filename);
-        counts = std::vector<std::vector<std::int64_t>>(layout.size(), std::vector<std::int64_t>(layout[0].size(),0));
-        directions = DirectionsMap(
-            layout.size(), 
-            std::vector<std::vector<FromDir>>(layout[0].size(),std::vector<FromDir>{})
-        );
-        beams = {Beam({-1, 0})};
-    };
     Board(std::vector<std::string> & l, Beam b)   
     {
         layout = l;
-        counts = std::vector<std::vector<std::int64_t>>(layout.size(), std::vector<std::int64_t>(layout[0].size(),0));
-        directions = DirectionsMap(
-            layout.size(), 
-            std::vector<std::vector<FromDir>>(layout[0].size(),std::vector<FromDir>{})
-        );
+        directions = DirMap(layout.size(), DirLine(layout[0].size(), DirVec{}));
         beams = {b};
     };
 
     void run()
     {
         bool change = true;
-        auto old_directions = directions;
-        do
+        std::vector<Beam> new_beams;
+        while(change)
         {
-            old_directions = directions;
-            std::vector<Beam> new_beams;
+            change = false;
+            
             for(std::int64_t b=beams.size()-1; b>=0; --b)
             {
                 beams[b].move();
-                if(beams[b].in_range(layout[0].size(), layout.size()))
-                {
-                    counts[beams[b].get_pos().second][beams[b].get_pos().first] ++;
-                    add_direction(beams[b].get_dir() ,beams[b].get_pos().first, beams[b].get_pos().second);
-                    // update direction
-                    auto new_beam_dir = beams[b].update_direction(layout[beams[b].get_pos().second][beams[b].get_pos().first]);
-                    if(new_beam_dir.has_value())
-                    {
-                        new_beams.emplace_back(Beam(beams[b].get_pos(), new_beam_dir.value()));
-                    }
-                }
-                else
+                if(!beams[b].in_range(layout[0].size(), layout.size()) ||
+                   !add_direction(beams[b].from_dir() ,beams[b].pos().first, beams[b].pos().second))
                 {
                     beams.erase(beams.begin()+b);
+                    continue;
                 }
-            }
-            for(auto && b : new_beams)
-            {
-                beams.emplace_back(std::move(b));
-            }
-        }
-        while(directions_changed(old_directions));
-    }
-
-    bool directions_changed(DirectionsMap & d)
-    {
-        for(auto r=0; r<directions.size(); ++r)
-        {
-            for(auto c=0; c<directions[0].size(); ++c)
-            {
-                if(directions[r][c].size() != d[r][c].size())
+                change = true;
+                // update direction
+                auto new_beam_dir = beams[b].update_direction(layout[beams[b].pos().second][beams[b].pos().first]);
+                if(new_beam_dir.has_value())
                 {
-                    return true;
+                    new_beams.emplace_back(Beam(beams[b].pos(), std::move(new_beam_dir.value())));
                 }
             }
-        }
-        return false;
-    }
-
-    void add_direction(FromDir d, std::int64_t x, std::int64_t y)
-    {
-        auto pos = std::find(directions[y][x].begin(), directions[y][x].end(), d);
-        {
-            if(pos == directions[y][x].end())
+            for(auto b=0; b<new_beams.size(); ++b)
             {
-                directions[y][x].emplace_back(d);
+                beams.emplace_back(std::move(new_beams[b]));
             }
+            new_beams.clear();
         }
     }
 
     std::int64_t energized_count()
     {
         auto sum = std::int64_t{0};
-        for(auto && r : counts)
+        for(auto && r : directions)
         {
             for(auto && v: r)
             {
-                if(v > 0)
+                if(v.size() > 0)
                 {
                     sum++;
                 }
@@ -240,15 +198,28 @@ public:
     }
 
 private:
+    bool add_direction(FromDir d, std::int64_t x, std::int64_t y)
+    {
+        auto pos = std::find(directions[y][x].begin(), directions[y][x].end(), d);
+        {
+            if(pos == directions[y][x].end())
+            {
+                directions[y][x].emplace_back(d);
+                return true;
+            }
+        }
+        return false;
+    }
+
     std::vector<std::string> layout;
-    std::vector<std::vector<std::int64_t>> counts;
-    DirectionsMap directions;
+    DirMap directions;
     std::vector<Beam> beams;
 };
 
 void part1()
 {
-    auto board = Board("input_actual");
+    auto layout = file_to_vec<std::string>("input_actual");
+    auto board = Board(layout, Beam({-1, 0}, {1,0}));
     board.run();
     std::cout << board.energized_count() << "\n";
 }
@@ -259,26 +230,24 @@ void part2()
     auto counts = std::vector<std::int64_t>{};
     for(auto y=0; y<layout.size(); ++y)
     {
-        auto board1 = Board(layout, Beam(Position{-1, y}, {1,0}));
+        auto board1 = Board(layout, Beam({-1, y}, {1,0}));
         board1.run();
         counts.emplace_back(board1.energized_count());
 
-        auto board2 = Board(layout, Beam(Position{layout[0].size(), y}, {-1,0}));
+        auto board2 = Board(layout, Beam({layout[0].size(), y}, {-1,0}));
         board2.run();
         counts.emplace_back(board2.energized_count());
-        std::cout << y << "\n";
     }
 
     for(auto x=0; x<layout[0].size(); ++x)
     {
-        auto board3 = Board(layout, Beam(Position{x, -1}, {0,1}));
+        auto board3 = Board(layout, Beam({x, -1}, {0,1}));
         board3.run();
         counts.emplace_back(board3.energized_count());
 
-        auto board4 = Board(layout, Beam(Position{x, layout.size()}, {0,-1}));
+        auto board4 = Board(layout, Beam({x, layout.size()}, {0,-1}));
         board4.run();
         counts.emplace_back(board4.energized_count());
-        std::cout << x << "\n";
     }
 
     auto val = counts[0];
