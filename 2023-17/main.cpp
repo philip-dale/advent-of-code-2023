@@ -34,7 +34,7 @@ void walk(std::vector<std::vector<std::uint32_t>> & weights, std::vector<std::ve
         {
             if(stack[i].dist < low_val)
             {
-                low_val = stack[0].dist;
+                low_val = stack[i].dist;
                 low_pos = i;
             }
         }

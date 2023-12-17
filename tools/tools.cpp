@@ -4,6 +4,7 @@
 #include <iostream>
 #include <streambuf>
 #include <cerrno>
+#include <map>
 
 std::string to_string(std::vector<std::uint8_t> const & data)
 {
@@ -95,6 +96,57 @@ void dijkstra(std::vector<node> & nodes, std::size_t start, bool do_all, std::si
                 next_dist = node.dist();
                 running = true;
             }
+        }
+    }
+}
+
+struct dijkstra_node
+{
+    std::int64_t dist;
+    std::int64_t r;
+    std::int64_t c;
+    std::string key()
+    {
+        return std::string(std::to_string(r) + "_" + std::to_string(c));
+    }
+};
+
+void dijkstra_2d(std::vector<std::vector<std::uint32_t>> & weights, std::vector<std::vector<std::uint32_t>> & dists)
+{
+    std::map<std::string, std::uint32_t> cache{};
+    auto stack = std::vector<dijkstra_node>{{0,0,0}};
+    while(stack.size() > 0)
+    {
+        auto low_val = stack[0].dist;
+        auto low_pos = 0;
+        for(auto i=0; i< stack.size(); ++i)
+        {
+            if(stack[i].dist < low_val)
+            {
+                low_val = stack[i].dist;
+                low_pos = i;
+            }
+        }
+
+        auto next_test = stack[low_pos];
+        stack.erase(stack.begin() + low_pos);
+
+        // update our map if we have a better score
+        if(next_test.dist < dists[next_test.r][next_test.c])
+        {
+            dists[next_test.r][next_test.c] = next_test.dist;
+        }
+
+        // dont repeat my self
+        if(cache.contains(next_test.key()))
+        {
+            continue;
+        }
+        cache[next_test.key()] = next_test.dist;
+
+        for(auto neighbour : adjacent_neighbours_2d(weights, next_test.c, next_test.r))
+        {
+            stack.emplace_back(dijkstra_node{next_test.dist + weights[neighbour.second][neighbour.first], static_cast<std::uint32_t>(neighbour.second), static_cast<std::uint32_t>(neighbour.first)});
         }
     }
 }

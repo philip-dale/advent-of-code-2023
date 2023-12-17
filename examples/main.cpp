@@ -9,20 +9,27 @@ void test_dijkstra()
     std::string map_str = "1163751742" + std::string(NEW_LINE) + "1381373672" + std::string(NEW_LINE) + "2136511328" + std::string(NEW_LINE) + "3694931569" + std::string(NEW_LINE) + "7463417111" + std::string(NEW_LINE) + "1319128137" + std::string(NEW_LINE) + "1359912421" + std::string(NEW_LINE) + "3125421639" + std::string(NEW_LINE) + "1293138521" + std::string(NEW_LINE) + "2311944581";
     auto map_lines = str_to_vec<std::string>(map_str);
     auto data = std::vector<std::vector<std::uint32_t>>{};
+    auto dists = std::vector<std::vector<std::uint32_t>>{};
     for(auto && l : map_lines)
     {
         auto v = std::vector<std::uint32_t>{};
+        auto d = std::vector<std::uint32_t>{};
         for(auto && c : l)
         {
             v.emplace_back(c - 0x30);
+            d.emplace_back(std::numeric_limits<std::uint32_t>::max());
         }
         data.emplace_back(v);
+        dists.emplace_back(d);
     }
 
     auto nodes = two_d_vec_to_nodes(data);
     // dijkstra(nodes, 0, false, nodes.size()-1);
     dijkstra(nodes, 0);
     std::cout << "dist = " << nodes[nodes.size()-1].dist() << "\n";
+
+    dijkstra_2d(data, dists);
+    std::cout << "dist 2 = " << dists[dists.size()-1][dists[0].size()-1] << "\n";
 }
 
 int main(int argc, char* argv[])
