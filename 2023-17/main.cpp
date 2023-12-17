@@ -39,13 +39,18 @@ void walk(std::vector<std::vector<std::uint32_t>> & weights, std::vector<std::ve
             }
         }
 
-        auto next_test = stack[low_pos];
+        auto next_test = std::move(stack[low_pos]);
         stack.erase(stack.begin() + low_pos);
 
         // update our map if we have a better score
         if(next_test.dist < dists[next_test.r][next_test.c])
         {
             dists[next_test.r][next_test.c] = next_test.dist;
+        }
+
+        if(next_test.r == weights.size()-1 && next_test.c == weights[0].size()-1)
+        {
+            return;
         }
 
         // dont repeat my self
