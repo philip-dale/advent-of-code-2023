@@ -27,6 +27,10 @@ struct part{
         }
         return s;
     }
+    void print()
+    {
+        std::cout << x << ", " << m << ", " << a << ", " << s << "\n";
+    }
 };
 
 class instruction{
@@ -146,8 +150,31 @@ void part1()
     std::cout << sum << "\n";
 }
 
+struct part_range{
+    part min;
+    part max;
+};
+
+part_range walk_range(std::map<std::string, instruction_set> & processes, std::string const& process, part_range range)
+{
+    for(auto i=0; i<processes[process].instructions.size(); ++i)
+    {
+
+    }
+}
+
 void part2()
 {
+    auto sections = file_to_vec<std::string>("input_actual", std::string(NEW_LINE) + std::string(NEW_LINE));
+    auto instruction_lines = str_to_vec<std::string>(sections[0]);
+    auto processes = std::map<std::string, instruction_set>{};
+    for(auto &&il : instruction_lines)
+    {
+        auto is = instruction_set(il);
+        processes[is.code] = std::move(is);
+    }
+
+    auto start_range = part_range{{0,0,0,0},{4000,4000,4000,4000}};
 }
 
 int main(int argc, char* argv[])
