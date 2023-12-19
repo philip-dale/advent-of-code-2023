@@ -40,7 +40,7 @@ public:
 
     instruction(std::string const& input)
     {
-        auto parts = std::regex("(.)(.)([^:])(.+)");
+        auto parts = std::regex("(.)(.)([^:]+):(.+)");
         std::smatch matches;
         std::regex_search(input, matches, parts);
         categorie = matches[1].str();
@@ -84,7 +84,7 @@ public:
         std::regex_search(input, matches, parts);
         code = matches[1].str();
         auto inst = str_to_vec<std::string>(matches[2].str(), ",");
-        for(auto i=0; i<inst.size()-2; ++i)
+        for(auto i=0; i<inst.size()-1; ++i)
         {
             instructions.emplace_back(instruction(inst[i]));
         }
@@ -108,11 +108,9 @@ public:
     std::string fail_val;
 };
 
-
-
 void part1()
 {
-    auto sections = file_to_vec<std::string>("input_sample", std::string(NEW_LINE) + std::string(NEW_LINE));
+    auto sections = file_to_vec<std::string>("input_actual", std::string(NEW_LINE) + std::string(NEW_LINE));
     auto instruction_lines = str_to_vec<std::string>(sections[0]);
     auto processes = std::map<std::string, instruction_set>{};
     for(auto &&il : instruction_lines)
@@ -123,7 +121,7 @@ void part1()
 
     auto parts = std::vector<part>{};
     auto part_lines = str_to_vec<std::string>(sections[1]);
-    for(auto &&pl : instruction_lines)
+    for(auto &&pl : part_lines)
     {
         auto prop_regex = std::regex("\\{x=([^,]+),m=([^,]+),a=([^,]+),s=([^,]+)\\}");
         std::smatch matches;
@@ -136,7 +134,7 @@ void part1()
     for(auto &&p : parts)
     {
         auto current_inst = std::string("in");
-        while(current_inst != "A" || current_inst != "R")
+        while(current_inst != "A" && current_inst != "R")
         {
             current_inst = processes[current_inst].process(p);
         }
