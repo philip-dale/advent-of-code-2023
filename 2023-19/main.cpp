@@ -11,26 +11,52 @@ struct part{
     std::int64_t m;
     std::int64_t a;
     std::int64_t s;
-    std::int64_t get(std::string & v)
+    std::int64_t get(std::string & c)
     {
-        if(v == "x")
+        if(c == "x")
         {
             return x;
         }
-        if(v == "m")
+        if(c == "m")
         {
             return m;
         }
-        if(v == "a")
+        if(c == "a")
         {
             return a;
         }
         return s;
     }
+
+    void set(std::string & c, std::int64_t v)
+    {
+        if(c == "x")
+        {
+            x = v;
+            return;
+        }
+        if(c == "m")
+        {
+            m = v;
+            return;
+        }
+        if(c == "a")
+        {
+            a = v;
+            return;
+        }
+        s = v;
+    }
+
     void print()
     {
         std::cout << x << ", " << m << ", " << a << ", " << s << "\n";
     }
+};
+
+struct part_range{
+    part min;
+    part max;
 };
 
 class instruction{
@@ -65,6 +91,36 @@ public:
             return true;
         }
         return false;
+    }
+
+    bool process(part_range & pr)
+    {  
+        auto min = pr.min.get(categorie);
+        auto max = pr.max.get(categorie);
+
+        if(greater && min > val)
+        {
+            return true;
+        }
+        else if(!greater && max < val)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    part_range modify_range(part_range & pr)
+    {
+        auto new_range = pr;
+        if(greater)
+        {
+            new_range.min.set(categorie, val+1);
+        }
+        else
+        {
+            new_range.max.set(categorie, val-1);
+        }
+        return new_range;
     }
 
     std::string categorie;
@@ -150,22 +206,44 @@ void part1()
     std::cout << sum << "\n";
 }
 
-struct part_range{
-    part min;
-    part max;
-};
-
-part_range walk_range(std::map<std::string, instruction_set> & processes, std::string const& process, part_range range)
+void walk_range(std::map<std::string, instruction_set> & processes, std::string const& process, part_range range, std::vector<part_range> & posibles)
 {
+    if(process == "A")
+    {
+        posibles.emplace_back(range);
+        return;
+    }
+
+    if(process == "R")
+    {
+        return;
+    }
+
     for(auto i=0; i<processes[process].instructions.size(); ++i)
     {
-
+        auto match = processes[process].instructions[i].process(range);
+        if(match)
+        {
+            walk_range(processes, processes[process].instructions[i].result, range, posibles);
+            break;
+        }
+        else
+        {
+            // adjust range and cary on
+            auto new_range = processes[process].instructions[i].modify_range(range);
+            walk_range(processes, processes[process].instructions[i].result, new_range, posibles);
+            if(i == processes[process].instructions.size()-1)
+            {
+                walk_range(processes, processes[process].fail_val, range, posibles);
+                break;
+            }
+        }
     }
 }
 
 void part2()
 {
-    auto sections = file_to_vec<std::string>("input_actual", std::string(NEW_LINE) + std::string(NEW_LINE));
+    auto sections = file_to_vec<std::string>("input_sample", std::string(NEW_LINE) + std::string(NEW_LINE));
     auto instruction_lines = str_to_vec<std::string>(sections[0]);
     auto processes = std::map<std::string, instruction_set>{};
     for(auto &&il : instruction_lines)
@@ -174,13 +252,22 @@ void part2()
         processes[is.code] = std::move(is);
     }
 
-    auto start_range = part_range{{0,0,0,0},{4000,4000,4000,4000}};
+    auto start_range = part_range{{1,1,1,1},{4000,4000,4000,4000}};
+    std::vector<part_range> posibles{};
+    walk_range(processes, "in", start_range, posibles);
+
+    for(auto &&result : posibles)
+    {
+        std::cout << result.max.x << " " << result.min.x << " " << result.max.m << " " << result.min.m << " " << result.max.a << " " << result.min.a << " " << result.max.s << " " << result.min.s << "\n";
+        // std::cout << (result.max.x - result.min.x + 1) * (result.max.m - result.min.m + 1) * (result.max.a - result.min.a + 1) * (result.max.s - result.min.s + 1) << "\n";
+        std::cout << (result.max.x - result.min.x + 1) << " " << (result.max.m - result.min.m + 1) << " " << (result.max.a - result.min.a + 1) << " " << (result.max.s - result.min.s + 1) << "\n";
+    }
 }
 
 int main(int argc, char* argv[])
 {
-    std::cout << "---- Part1 ----\n";
-    part1();
+    // std::cout << "---- Part1 ----\n";
+    // part1();
     std::cout << "---- Part2 ----\n";
     part2();
 }
