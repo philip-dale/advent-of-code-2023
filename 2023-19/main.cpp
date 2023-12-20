@@ -109,18 +109,18 @@ public:
         return false;
     }
 
-    part_range modify_range(part_range & pr)
+    void modify_range(part_range & a, part_range & b)
     {
-        auto new_range = pr;
         if(greater)
         {
-            new_range.min.set(categorie, val+1);
+            a.min.set(categorie, val+1);
+            b.max.set(categorie, val);
         }
         else
         {
-            new_range.max.set(categorie, val-1);
+            a.max.set(categorie, val-1);
+            b.min.set(categorie, val);
         }
-        return new_range;
     }
 
     std::string categorie;
@@ -230,8 +230,10 @@ void walk_range(std::map<std::string, instruction_set> & processes, std::string 
         else
         {
             // adjust range and cary on
-            auto new_range = processes[process].instructions[i].modify_range(range);
-            walk_range(processes, processes[process].instructions[i].result, new_range, posibles);
+            auto range_a = range;
+            // auto range_b = range;
+            processes[process].instructions[i].modify_range(range_a, range);
+            walk_range(processes, processes[process].instructions[i].result, range_a, posibles);
             if(i == processes[process].instructions.size()-1)
             {
                 walk_range(processes, processes[process].fail_val, range, posibles);
@@ -256,11 +258,17 @@ void part2()
     std::vector<part_range> posibles{};
     walk_range(processes, "in", start_range, posibles);
 
+    // auto totals = posibles[0];
+    // for(auto i=1; i<posibles.size(); ++i)
+    // {
+
+    // }
+
     for(auto &&result : posibles)
     {
-        std::cout << result.max.x << " " << result.min.x << " " << result.max.m << " " << result.min.m << " " << result.max.a << " " << result.min.a << " " << result.max.s << " " << result.min.s << "\n";
+        std::cout << result.min.x << " " << result.max.x << "\t\t\t" << result.min.m << " " << result.max.m << "\t\t\t" << result.min.a << " " << result.max.a << "\t\t\t" << result.min.s << " " << result.max.s << "\n";
         // std::cout << (result.max.x - result.min.x + 1) * (result.max.m - result.min.m + 1) * (result.max.a - result.min.a + 1) * (result.max.s - result.min.s + 1) << "\n";
-        std::cout << (result.max.x - result.min.x + 1) << " " << (result.max.m - result.min.m + 1) << " " << (result.max.a - result.min.a + 1) << " " << (result.max.s - result.min.s + 1) << "\n";
+        // std::cout << (result.max.x - result.min.x + 1) << " " << (result.max.m - result.min.m + 1) << " " << (result.max.a - result.min.a + 1) << " " << (result.max.s - result.min.s + 1) << "\n";
     }
 }
 
