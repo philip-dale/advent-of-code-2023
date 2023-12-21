@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <map>
+#include <cmath>
 
 struct dijkstra_garden_node
 {
@@ -153,7 +154,7 @@ void part1()
 
 void part2()
 {
-    auto map_lines = file_to_vec<std::string>("input_sample");
+    auto map_lines = file_to_vec<std::string>("input_actual");
     auto garden = std::vector<std::vector<char>>{};
     for(auto && l : map_lines)
     {
@@ -164,9 +165,26 @@ void part2()
         }
         garden.emplace_back(v);
     }
-    auto result = dijkstra_garden(garden, 5000, true);
 
-    std::cout << result << "\n";
+    auto size = static_cast<double>(garden.size());
+    auto x = std::vector<double>{
+        std::floor(size/2),
+        std::floor(size/2) + size,
+        std::floor(size/2) + 2*size
+    };
+    auto y = std::vector<double>{};
+
+    for(auto i=0; i<x.size(); ++i)
+    {
+        y.emplace_back(static_cast<double>(dijkstra_garden(garden, x[i], true)));
+    }
+
+    for(auto i=0; i<x.size(); ++i)
+    {
+        std::cout << x[i] << ", " << y[i] << "\n";
+    }
+
+    std::cout << static_cast<std::int64_t>(solve_poly_quad(x, y, 26501365)) << "\n";
 }
 
 int main(int argc, char* argv[])

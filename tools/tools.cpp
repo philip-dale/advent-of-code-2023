@@ -169,3 +169,22 @@ std::int64_t get_pick_area(std::vector<std::pair<std::int64_t, std::int64_t>> &s
     auto area = get_area(shape);
     return area - (edge_count/2) + 1;
 }
+
+//use  Lagrange Interpolation
+double solve_poly_quad(std::vector<double> & x, std::vector<double> & y, double pos)
+{
+    double result = 0;
+    for (int i=0; i<x.size(); i++)
+    {
+        double term = y[i];
+        for (int j=0;j<x.size();j++)
+        {
+            if (j!=i)
+            {
+                term = term*(pos - x[j])/(x[i] - x[j]);
+            }
+        }
+        result += term;
+    }
+    return result;
+}

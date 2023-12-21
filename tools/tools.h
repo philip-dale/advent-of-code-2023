@@ -389,3 +389,5 @@ void dijkstra_2d(std::vector<std::vector<std::uint32_t>> & weights, std::vector<
 
 std::int64_t get_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape);
 std::int64_t get_pick_area(std::vector<std::pair<std::int64_t, std::int64_t>> &shape, std::size_t edge_count);
+
+double solve_poly_quad(std::vector<double> & x, std::vector<double> & y, double pos);
