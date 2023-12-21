@@ -245,7 +245,7 @@ void walk_range(std::map<std::string, instruction_set> & processes, std::string 
 
 void part2()
 {
-    auto sections = file_to_vec<std::string>("input_sample", std::string(NEW_LINE) + std::string(NEW_LINE));
+    auto sections = file_to_vec<std::string>("input_actual", std::string(NEW_LINE) + std::string(NEW_LINE));
     auto instruction_lines = str_to_vec<std::string>(sections[0]);
     auto processes = std::map<std::string, instruction_set>{};
     for(auto &&il : instruction_lines)
@@ -258,24 +258,18 @@ void part2()
     std::vector<part_range> posibles{};
     walk_range(processes, "in", start_range, posibles);
 
-    // auto totals = posibles[0];
-    // for(auto i=1; i<posibles.size(); ++i)
-    // {
-
-    // }
-
+    auto sum = std::int64_t{0};
     for(auto &&result : posibles)
     {
-        std::cout << result.min.x << " " << result.max.x << "\t\t\t" << result.min.m << " " << result.max.m << "\t\t\t" << result.min.a << " " << result.max.a << "\t\t\t" << result.min.s << " " << result.max.s << "\n";
-        // std::cout << (result.max.x - result.min.x + 1) * (result.max.m - result.min.m + 1) * (result.max.a - result.min.a + 1) * (result.max.s - result.min.s + 1) << "\n";
-        // std::cout << (result.max.x - result.min.x + 1) << " " << (result.max.m - result.min.m + 1) << " " << (result.max.a - result.min.a + 1) << " " << (result.max.s - result.min.s + 1) << "\n";
+        sum += (result.max.x - result.min.x + 1) * (result.max.m - result.min.m + 1) * (result.max.a - result.min.a + 1) * (result.max.s - result.min.s + 1);
     }
+    std::cout << sum << "\n";
 }
 
 int main(int argc, char* argv[])
 {
-    // std::cout << "---- Part1 ----\n";
-    // part1();
+    std::cout << "---- Part1 ----\n";
+    part1();
     std::cout << "---- Part2 ----\n";
     part2();
 }
